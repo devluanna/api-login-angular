@@ -41,7 +41,7 @@ classDiagram
 <br />
 - Typescript
 <br />
-✅ Front-End Repository: https://github.com/devluanna/reactgram-front](https://github.com/devluanna/project-angular-login
+✅ Front-End Repository: https://github.com/devluanna/project-angular-login
 <br />
 <br />
 
