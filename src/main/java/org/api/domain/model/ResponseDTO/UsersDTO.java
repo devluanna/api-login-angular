@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.api.domain.model.ProfileRole;
 import org.api.domain.model.Status;
+import org.api.domain.model.SubStatus;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,7 +18,8 @@ public class UsersDTO {
     private String email;
     private Status status;
     private String password;
-
     private ProfileRole role;
+    private SubStatus subStatus;
+
 
 }

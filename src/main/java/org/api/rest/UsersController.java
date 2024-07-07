@@ -40,4 +40,15 @@ public class UsersController {
         return ResponseEntity.ok(updatedAccount);
     }
 
+    @GetMapping("/u/{id_user}")
+    public ResponseEntity <UsersDTO> getUserById(@PathVariable Integer id_user) {
+        UsersDTO personUser = usersService.getUserById(id_user);
+
+        if(personUser == null) {
+            ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(personUser);
+    }
+
 }

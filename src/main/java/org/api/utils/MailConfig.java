@@ -21,8 +21,8 @@ public class MailConfig {
         properties.put("mail.smtp.starttls.enable", "true");
 
 
-        final String username = "rhconnectsystem@hotmail.com";
-        final String password = "rhconnect@98";
+        final String username = "rh_peoplehub@outlook.com";
+        final String password = "peoplehub@$123";
 
         Session session = Session.getInstance(properties, new Authenticator() {
             @Override

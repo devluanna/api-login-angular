@@ -32,15 +32,15 @@ public class TokenService {
         }
     }
 
-    public String validateToken(String token){
-        try{
+    public String validateToken(String token) {
+        try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.require(algorithm)
-                    .withIssuer("api-system-login-angular")
+                    .withIssuer("Connect-System")
                     .build()
                     .verify(token)
                     .getSubject();
-        } catch (JWTVerificationException exception){
+        } catch (JWTVerificationException exception) {
             return "";
         }
     }

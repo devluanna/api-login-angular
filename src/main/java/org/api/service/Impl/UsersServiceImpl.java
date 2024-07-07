@@ -13,6 +13,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.NoSuchElementException;
 
 @Service
@@ -33,20 +36,25 @@ public class UsersServiceImpl implements UsersService {
     }
 
 
+    @Override
+    @Transactional
+    public UsersDTO getUserById(Integer id_user) {
+        return usersRepository.findUserById(id_user);
+    }
+
     //Método por criar o usuário no sistema.
     //Method for creating the user in the system.
     @Override
     @Transactional
     public UsersDTO createNewUser(UsersDTO newUser, Users users) {
-
         validateExistsEmail(newUser);
 
-        Users userCreated = new Users
-                (newUser.getFirst_name(), newUser.getLast_name(), newUser.getEmail(), newUser.getIdentity(),
-                        newUser.getPassword(), newUser.getRole());
+        Users userCreated = new Users(
+                newUser.getFirst_name(), newUser.getLast_name(), newUser.getEmail(), newUser.getIdentity(),
+                newUser.getPassword(), newUser.getRole()
+        );
 
 
-        //String passwordUser = generateRandomPassword();
         String passwordUser = "12345678";
         String encryptedPassword = passwordEncoder.encode(passwordUser);
         userCreated.setPassword(encryptedPassword);
@@ -56,9 +64,9 @@ public class UsersServiceImpl implements UsersService {
         Users savedUser = usersRepository.save(userCreated);
         BeanUtils.copyProperties(savedUser, newUser);
 
-        //sendWelcomeEmail(newUser, savedUser, passwordUser);
-        return (newUser);
+        return newUser;
     }
+
 
     // Método responsável por atualizar as informações do usuário.
     // Method responsible for updating user information.

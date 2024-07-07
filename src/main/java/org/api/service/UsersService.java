@@ -12,4 +12,6 @@ public interface UsersService {
     Users findById(Integer id_user);
 
     UpdateUserDTO toUpdateUser(Users users, Integer id_user, UpdateUserDTO updateUserDTO);
+
+    UsersDTO getUserById(Integer id_user);
 }

@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface PasswordService {
-    Users toUpdatePassword(Users user, PasswordDTO passwordDTO, Integer id);
+    Users toUpdatePassword(Users user, PasswordDTO passwordDTO, Integer id_user);
 
     Users recoverPassword(Users user, RecoveryPasswordDTO recoveryPasswordDTO, String email);
+
+    void checkAndUpdatePasswordStatus();
 }

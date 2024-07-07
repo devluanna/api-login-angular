@@ -5,6 +5,7 @@ import org.api.domain.model.ResponseDTO.AuthenticationDTO;
 import org.api.domain.model.ResponseDTO.PasswordDTO;
 import org.api.domain.model.ResponseDTO.RecoveryPasswordDTO;
 import org.api.domain.model.ResponseDTO.ResponseTokenDTO;
+import org.api.domain.model.SubStatus;
 import org.api.domain.model.Users;
 import org.api.infra.security.TokenService;
 import org.api.service.PasswordService;
@@ -38,15 +39,26 @@ public class AuthenticationController {
 
         var token = tokenService.generateToken((Users) authentication.getPrincipal());
 
-        return ResponseEntity.ok(new ResponseTokenDTO(token));
+        Users authenticatedUser = (Users) authentication.getPrincipal();
+        Integer userId = authenticatedUser.getId_user();
+
+
+        passwordService.checkAndUpdatePasswordStatus();
+
+
+        return ResponseEntity.ok(new ResponseTokenDTO(token, userId));
     }
 
-    @PutMapping("/password/{id}")
-    public ResponseEntity<String> updatePassword(@PathVariable Integer id, @RequestBody @Valid PasswordDTO passwordDTO) {
-        Users user = usersService.findById(id);
 
+
+    @PutMapping("/password/{id_user}")
+    public ResponseEntity<String> updatePassword(@PathVariable Integer id_user, @RequestBody @Valid PasswordDTO passwordDTO) {
+
+        System.out.println("ID do usuário: " + id_user);
+
+        Users user = usersService.findById(id_user);
         user.setPassword(passwordDTO.getPassword());
-        passwordService.toUpdatePassword(user, passwordDTO, id);
+        passwordService.toUpdatePassword(user, passwordDTO, id_user);
 
         return ResponseEntity.ok("Password updated successfully!");
     }
