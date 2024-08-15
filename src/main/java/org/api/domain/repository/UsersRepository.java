@@ -16,7 +16,7 @@ public interface UsersRepository extends JpaRepository<Users, Integer> {
     @Query("SELECT u FROM Users u WHERE u.identity = :identity")
     Users findByIdentityUser(@Param("identity") String identity);
 
-    @Query("SELECT NEW org.api.domain.model.ResponseDTO.UsersDTO(u.id_user, u.identity, u.first_name, u.last_name, u.email, u.status, u.password, u.role, u.subStatus) FROM Users u WHERE u.id_user = :id_user")
+    @Query("SELECT NEW org.api.domain.model.ResponseDTO.UsersDTO(u.id_user, u.identity, u.first_name, u.last_name, u.email, u.status, u.password, u.role, u.subStatus, u.passwordIsCompliance, u.createdDate, u.lastPasswordUpdateDate, u.passwordExpirationDays) FROM Users u WHERE u.id_user = :id_user")
     UsersDTO findUserById(@Param("id_user") Integer id_user);
 
 }

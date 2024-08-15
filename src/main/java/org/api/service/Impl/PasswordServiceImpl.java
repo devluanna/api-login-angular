@@ -10,7 +10,9 @@ import org.api.service.UsersService;
 import org.api.utils.MailConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -46,8 +48,9 @@ public class PasswordServiceImpl implements PasswordService {
             existingUser.setPassword(encryptedPassword);
             usersRepository.save(existingUser);
 
-            System.out.println("ENVIADO");
-            System.out.println("ÏD DO USUARIO QUE ESTA RECUPERANDO SENHA: " + existingUser.getId_user());
+            System.out.println("SENT!!");
+            System.out.println("ÏD USER " + existingUser.getId_user());
+
             existingUser.setFirstAccessRequired(true);
             existingUser.setPasswordIsCompliance(false);
             existingUser.setSubStatus(SubStatus.IN_NON_COMPLIANCE);
@@ -58,14 +61,14 @@ public class PasswordServiceImpl implements PasswordService {
             LocalDateTime passwordExpirationDate = now.plusMinutes(3);
             existingUser.setPasswordExpirationDays(passwordExpirationDate);
 
-            // Verificação de expiração da senha
+
             if (now.isAfter(passwordExpirationDate)) {
-                System.out.println("Sua senha vai expirar em " + passwordExpirationDate);
+                System.out.println("Your password will expire in " + passwordExpirationDate);
             }
 
             usersRepository.save(existingUser);
 
-            //sendEmailWithNewPassword(existingUser, passwordUser);
+            //sendEmailWithNewPassword(existingUser, passwordUser); // (use this method to recover your password, the new password is generated and sent via email)
 
             return existingUser;
         } else {
@@ -75,20 +78,31 @@ public class PasswordServiceImpl implements PasswordService {
 
     public Users toUpdatePassword(Users updatedNewPassword, PasswordDTO passwordDTO, Integer id_user) {
 
-        Users authenticatedUser = (Users) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalArgumentException("Authentication is required to update the password.");
+        }
+
+        Users authenticatedUser = (Users) authentication.getPrincipal();
 
         if (!authenticatedUser.getId_user().equals(id_user)) {
             throw new IllegalArgumentException("Access denied!");
         }
 
-        String newPassword = updatedNewPassword.getPassword();
+        String newPassword = passwordDTO.getPassword();
+        String newPasswordConfirmation = passwordDTO.getConfirmPassword();
 
         if (newPassword == null || newPassword.length() < 10) {
             throw new IllegalArgumentException("Password must be at least 10 characters.");
         }
 
-        String encryptedPassword = passwordEncoder.encode(newPassword);
-        updatedNewPassword.setPassword(encryptedPassword);
+        if (!newPassword.equals(newPasswordConfirmation)) {
+            throw new IllegalArgumentException("Passwords do not match.");
+        }
+
+        String encryptedNewPassword = new BCryptPasswordEncoder().encode(newPassword);
+        updatedNewPassword.setPassword(encryptedNewPassword);
 
         updatedNewPassword.setFirstAccessRequired(false);
         updatedNewPassword.setPasswordIsCompliance(true);
@@ -96,24 +110,18 @@ public class PasswordServiceImpl implements PasswordService {
         LocalDateTime now = LocalDateTime.now();
         updatedNewPassword.setLastPasswordUpdateDate(now);
 
-        // Calcular a data de expiração da senha para 30 dias após a atualização
         LocalDateTime passwordExpirationDate = now.plusDays(30);
+
+        //LocalDateTime passwordExpirationDate = now.plusMinutes(4); // for tests
         updatedNewPassword.setPasswordExpirationDays(passwordExpirationDate);
-
-        // Verificação de expiração da senha
-        if (now.isAfter(passwordExpirationDate)) {
-            System.out.println("Sua senha vai expirar em " + passwordExpirationDate);
-        }
-
-        System.out.println("SUBSTATUS DO USUARIO EH " + updatedNewPassword.getSubStatus());
 
         return usersRepository.save(updatedNewPassword);
     }
 
 
     //Metodo responsavel por checar e bloquear caso a senha expire os 3 meses
-    //@Scheduled(cron = "0 0 0 * * ?") // Executa diariamente à meia-noite
-    @Scheduled(cron = "0 * * * * ?") // Executa a cada minuto
+    @Scheduled(cron = "0 0 0 * * ?") // in case of days (30), it will be updated at midnight
+    //@Scheduled(cron = "0 * * * * ?") // in case of tests in minutes use this one!
     public void checkAndUpdatePasswordStatus() {
         List<Users> users = usersRepository.findAll();
         LocalDateTime now = LocalDateTime.now();
@@ -124,16 +132,15 @@ public class PasswordServiceImpl implements PasswordService {
                 LocalDateTime passwordExpirationDate = user.getPasswordExpirationDays();
 
                 if (passwordExpirationDate != null) {
-                    long minutesUntilExpiration = Duration.between(now, passwordExpirationDate).toMinutes();
+                    long daysUntilExpiration  = Duration.between(now, passwordExpirationDate).toMinutes();
 
-                    if (minutesUntilExpiration <= 3 && minutesUntilExpiration > 1) {
+                    if (daysUntilExpiration  <= 6 && daysUntilExpiration  > 3) {
                         user.setFirstAccessRequired(true);
                         user.setPasswordIsCompliance(false);
                         user.setSubStatus(SubStatus.IN_NON_COMPLIANCE);
-                    } else if (minutesUntilExpiration <= 1) {
+                    } else if (daysUntilExpiration  == 3) {
                         user.setSubStatus(SubStatus.ON_ALERT);
-                    } else if (minutesUntilExpiration <= 0) {
-
+                    } else if (daysUntilExpiration  <= 0) {
                         user.setSubStatus(SubStatus.BLOCKED);
                     }
                 }
@@ -166,7 +173,7 @@ public class PasswordServiceImpl implements PasswordService {
 
         String passwordUser = password.toString();
 
-        System.out.println("SENHA NOVA DO USUARIO ->> " + passwordUser);
+        System.out.println("NEW PASSWORD USER" + passwordUser);
         return password.toString();
     }
 

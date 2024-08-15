@@ -28,6 +28,9 @@ public class UsersServiceImpl implements UsersService {
     MailConfig emailService;
 
     @Autowired
+    PasswordServiceImpl passwordService;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
@@ -54,7 +57,7 @@ public class UsersServiceImpl implements UsersService {
                 newUser.getPassword(), newUser.getRole()
         );
 
-
+        //String passwordUser = generateRandomPassword(); // (generates the password automatically and sends it by email)
         String passwordUser = "12345678";
         String encryptedPassword = passwordEncoder.encode(passwordUser);
         userCreated.setPassword(encryptedPassword);
@@ -62,7 +65,12 @@ public class UsersServiceImpl implements UsersService {
         userCreated.setIdentity(generateId());
 
         Users savedUser = usersRepository.save(userCreated);
+
+
+
         BeanUtils.copyProperties(savedUser, newUser);
+
+        //sendWelcomeEmail(newUser, savedUser, passwordUser); (method responsible for sending the email after user registration)
 
         return newUser;
     }
@@ -184,7 +192,7 @@ public class UsersServiceImpl implements UsersService {
 
         String passwordUser = password.toString();
 
-        System.out.println("SENHA DO USUARIO ->> " + passwordUser);
+        System.out.println("PASSWORD USER" + passwordUser);
         return password.toString();
     }
 

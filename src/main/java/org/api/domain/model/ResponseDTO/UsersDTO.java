@@ -7,6 +7,8 @@ import org.api.domain.model.ProfileRole;
 import org.api.domain.model.Status;
 import org.api.domain.model.SubStatus;
 
+import java.time.LocalDateTime;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -20,6 +22,10 @@ public class UsersDTO {
     private String password;
     private ProfileRole role;
     private SubStatus subStatus;
+    private boolean passwordIsCompliance;
+    private LocalDateTime createdDate;
+    private LocalDateTime lastPasswordUpdateDate;
+    private LocalDateTime passwordExpirationDays;
 
 
 }

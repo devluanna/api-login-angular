@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.api.domain.model.ResponseDTO.UpdateUserDTO;
 import org.api.domain.model.ResponseDTO.UsersDTO;
 import org.api.domain.model.Users;
+import org.api.service.PasswordService;
 import org.api.service.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,11 +18,16 @@ public class UsersController {
     @Autowired
     UsersService usersService;
 
+    @Autowired
+    PasswordService passwordService;
+
     @SneakyThrows
     @PostMapping("/register")
     public ResponseEntity createUser(@RequestBody UsersDTO newUser, Users users) {
 
         UsersDTO createdUser = usersService.createNewUser(newUser, users);
+
+        passwordService.checkAndUpdatePasswordStatus();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
@@ -30,7 +36,7 @@ public class UsersController {
     public ResponseEntity updateUser(@PathVariable Integer id_user, @RequestBody UpdateUserDTO updateUserDTO) {
 
         if (id_user == null) {
-            System.out.println("Usuario nao encontrado!");
+            System.out.println("User not found!");
             return ResponseEntity.badRequest().build();
         }
 
@@ -50,5 +56,7 @@ public class UsersController {
 
         return ResponseEntity.ok(personUser);
     }
+
+
 
 }

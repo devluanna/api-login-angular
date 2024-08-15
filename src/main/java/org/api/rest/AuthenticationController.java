@@ -5,12 +5,12 @@ import org.api.domain.model.ResponseDTO.AuthenticationDTO;
 import org.api.domain.model.ResponseDTO.PasswordDTO;
 import org.api.domain.model.ResponseDTO.RecoveryPasswordDTO;
 import org.api.domain.model.ResponseDTO.ResponseTokenDTO;
-import org.api.domain.model.SubStatus;
 import org.api.domain.model.Users;
 import org.api.infra.security.TokenService;
 import org.api.service.PasswordService;
 import org.api.service.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -53,14 +53,17 @@ public class AuthenticationController {
 
     @PutMapping("/password/{id_user}")
     public ResponseEntity<String> updatePassword(@PathVariable Integer id_user, @RequestBody @Valid PasswordDTO passwordDTO) {
+        try {
+            Users user = usersService.findById(id_user);
+            user.setPassword(passwordDTO.getPassword());
+            user.setConfirmPassword(passwordDTO.getConfirmPassword());
 
-        System.out.println("ID do usuário: " + id_user);
-
-        Users user = usersService.findById(id_user);
-        user.setPassword(passwordDTO.getPassword());
-        passwordService.toUpdatePassword(user, passwordDTO, id_user);
-
-        return ResponseEntity.ok("Password updated successfully!");
+            passwordService.toUpdatePassword(user, passwordDTO, id_user);
+            return ResponseEntity.ok("Password updated successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();  // Log the error details
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+        }
     }
 
     @PutMapping("/reset-password")

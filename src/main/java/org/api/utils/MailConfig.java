@@ -21,8 +21,8 @@ public class MailConfig {
         properties.put("mail.smtp.starttls.enable", "true");
 
 
-        final String username = "rh_peoplehub@outlook.com";
-        final String password = "peoplehub@$123";
+        final String username = "email@email";
+        final String password = "password";
 
         Session session = Session.getInstance(properties, new Authenticator() {
             @Override
@@ -41,11 +41,11 @@ public class MailConfig {
 
             Transport.send(message);
 
-            System.out.println("E-mail enviado com sucesso para: " + to);
+            System.out.println("Email sent successfully to: " + to);
 
         } catch (MessagingException e) {
             e.printStackTrace();
-            System.out.println("Erro ao enviar e-mail para: " + to);
+            System.out.println("Error sending email to: " + to);
         }
     }
 }

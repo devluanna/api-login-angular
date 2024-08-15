@@ -32,8 +32,6 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (token != null) {
             var id_user = tokenService.validateToken(token);
 
-            System.out.println("Token: " + token);
-            System.out.println("ID do usuário no token: " + id_user);
 
             if (id_user == null || id_user.isEmpty()) {
                 throw new IllegalArgumentException("Invalid user ID in token");

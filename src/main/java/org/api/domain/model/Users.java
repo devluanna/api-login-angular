@@ -21,13 +21,6 @@ import java.util.List;
 @NoArgsConstructor
 public class Users implements UserDetails{
 
-    // Quando criar o usuario, o campo PRIMEIRO ACESSO inicia com true.
-    // Apos a atualizacao manual da senha dentro do portal, o valor voltara a ser false
-    // O valor so vai ser alterado/mudado pra true novamente quando a senha dele for resetada/enviada nova senha no email
-    // IMPLEMENTAR UMA LOGICA, ONDE A SENHA EXPIRARA A CADA 3 MESES E SE NAO ALTERAR NO ULTIMO DIA O USUARIO SERA BLOQUEADO E NAO CONSIGUIRA FAZER LOGIN COM A SENHA
-    // O DESBLOQUEIO TERA QUE SER FEITO ATRAVES DE UMA RECUPERACAO DE SENHA VIA EMAIL
-    // SE O USUARIO NAO ALTERAR A SENHA DENTRO DE 2 DIAS, SERA BLOQUEADO E SO DESBLOQUEARA COM SUPORTE
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -38,14 +31,15 @@ public class Users implements UserDetails{
     private String email;
     private String identity;
     private String password;
+    private String confirmPassword;
     private Status status;
     private ProfileRole role;
     private boolean firstAccessRequired;
-    private boolean passwordIsCompliance; //passwordIsCompliance
+    private boolean passwordIsCompliance;
     private SubStatus subStatus;
     private LocalDateTime createdDate;
-    private LocalDateTime lastPasswordUpdateDate; // rastreia a última atualização de senha
-    private LocalDateTime passwordExpirationDays; //defini o período de expiração da senha
+    private LocalDateTime lastPasswordUpdateDate; // track last password update
+    private LocalDateTime passwordExpirationDays; // password expiration period
 
 
     public Users(String first_name, String last_name, String email, String identity, String password, ProfileRole role) {
@@ -61,7 +55,7 @@ public class Users implements UserDetails{
         this.subStatus = SubStatus.valueOf("IN_NON_COMPLIANCE");
         this.createdDate = LocalDateTime.now();
         this.lastPasswordUpdateDate = LocalDateTime.now();
-        this.passwordExpirationDays = this.lastPasswordUpdateDate.plusDays(7);
+        this.passwordExpirationDays = this.lastPasswordUpdateDate.plusDays(30);
     }
 
     @Override
