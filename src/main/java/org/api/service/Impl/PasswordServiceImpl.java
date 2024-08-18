@@ -37,6 +37,8 @@ public class PasswordServiceImpl implements PasswordService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+
+    // Responsible method of user password recovery (via email)
     public Users recoverPassword(Users user, RecoveryPasswordDTO passDTO, String email) {
 
         Users existingUser = usersRepository.findByEmail(passDTO.getEmail());
@@ -48,17 +50,18 @@ public class PasswordServiceImpl implements PasswordService {
             existingUser.setPassword(encryptedPassword);
             usersRepository.save(existingUser);
 
-            System.out.println("SENT!!");
-            System.out.println("ÏD USER " + existingUser.getId_user());
-
             existingUser.setFirstAccessRequired(true);
             existingUser.setPasswordIsCompliance(false);
+
+
             existingUser.setSubStatus(SubStatus.IN_NON_COMPLIANCE);
 
             LocalDateTime now = LocalDateTime.now();
             existingUser.setLastPasswordUpdateDate(now);
 
-            LocalDateTime passwordExpirationDate = now.plusMinutes(3);
+            LocalDateTime passwordExpirationDate = now.plusDays(7); // After manual password recovery, it expires within 30 days
+
+            //LocalDateTime passwordExpirationDate = now.plusMinutes(4); // for tests
             existingUser.setPasswordExpirationDays(passwordExpirationDate);
 
 
@@ -68,7 +71,7 @@ public class PasswordServiceImpl implements PasswordService {
 
             usersRepository.save(existingUser);
 
-            //sendEmailWithNewPassword(existingUser, passwordUser); // (use this method to recover your password, the new password is generated and sent via email)
+            //sendEmailWithNewPassword(existingUser, passwordUser); //(use this method to recover your password, the new password is generated and sent via email)
 
             return existingUser;
         } else {
@@ -76,6 +79,8 @@ public class PasswordServiceImpl implements PasswordService {
         }
     }
 
+
+    // Method responsible for updating the user's password
     public Users toUpdatePassword(Users updatedNewPassword, PasswordDTO passwordDTO, Integer id_user) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -89,6 +94,15 @@ public class PasswordServiceImpl implements PasswordService {
         if (!authenticatedUser.getId_user().equals(id_user)) {
             throw new IllegalArgumentException("Access denied!");
         }
+
+        passwordValidationAndUpdate(updatedNewPassword, passwordDTO);
+
+        return usersRepository.save(updatedNewPassword);
+    }
+
+
+    // Method responsible for validating and changing the user's password
+    public void passwordValidationAndUpdate(Users updatedNewPassword, PasswordDTO passwordDTO) {
 
         String newPassword = passwordDTO.getPassword();
         String newPasswordConfirmation = passwordDTO.getConfirmPassword();
@@ -104,22 +118,27 @@ public class PasswordServiceImpl implements PasswordService {
         String encryptedNewPassword = new BCryptPasswordEncoder().encode(newPassword);
         updatedNewPassword.setPassword(encryptedNewPassword);
 
+        changePasswordStatus(updatedNewPassword);
+    }
+
+
+    // Method responsible for changing states after password update
+    public void changePasswordStatus(Users updatedNewPassword) {
         updatedNewPassword.setFirstAccessRequired(false);
         updatedNewPassword.setPasswordIsCompliance(true);
         updatedNewPassword.setSubStatus(SubStatus.UNLOCKED);
         LocalDateTime now = LocalDateTime.now();
         updatedNewPassword.setLastPasswordUpdateDate(now);
 
-        LocalDateTime passwordExpirationDate = now.plusDays(30);
+        LocalDateTime passwordExpirationDate = now.plusDays(30); // After manual password update, it expires within 30 days
 
         //LocalDateTime passwordExpirationDate = now.plusMinutes(4); // for tests
         updatedNewPassword.setPasswordExpirationDays(passwordExpirationDate);
-
-        return usersRepository.save(updatedNewPassword);
     }
 
 
-    //Metodo responsavel por checar e bloquear caso a senha expire os 3 meses
+    //Method responsible for changing the states of the SUBSTATUS attribute for 7 days before being blocked.
+    //The user needs to change the password manually to avoid being blocked.
     @Scheduled(cron = "0 0 0 * * ?") // in case of days (30), it will be updated at midnight
     //@Scheduled(cron = "0 * * * * ?") // in case of tests in minutes use this one!
     public void checkAndUpdatePasswordStatus() {
@@ -149,6 +168,7 @@ public class PasswordServiceImpl implements PasswordService {
         }
     }
 
+    // Method responsible for sending new generated password, "password recovery" requested by the user.
     private void sendEmailWithNewPassword(Users savedUser, String passwordUser) {
         String subject = "Password recovery!";
         String emailBody = "Hello! " + savedUser.getFirst_name() + " " + savedUser.getLast_name() + ",\n\nWelcome back!\n\n" +
@@ -160,6 +180,7 @@ public class PasswordServiceImpl implements PasswordService {
         emailService.sendEmail(savedUser.getEmail(), subject, emailBody);
     }
 
+    // Method responsible for automatically generating the User's 10-digit PASSWORD in the system. ((which will be sent by email))
     private String generateNewPassword() {
 
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$#";

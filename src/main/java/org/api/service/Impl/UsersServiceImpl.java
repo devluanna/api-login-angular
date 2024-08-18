@@ -45,7 +45,7 @@ public class UsersServiceImpl implements UsersService {
         return usersRepository.findUserById(id_user);
     }
 
-    //Método por criar o usuário no sistema.
+
     //Method for creating the user in the system.
     @Override
     @Transactional
@@ -76,7 +76,7 @@ public class UsersServiceImpl implements UsersService {
     }
 
 
-    // Método responsável por atualizar as informações do usuário.
+
     // Method responsible for updating user information.
     @Override
     @Transactional
@@ -94,7 +94,7 @@ public class UsersServiceImpl implements UsersService {
         return updatedUser;
     }
 
-    // Método responsável pela validação (Se o campo X não for atualizado, selecionará o atual) caso contrário, o campo será atualizado com sucesso.
+
     // Method responsible for validating (If field X is not updated, it will select the current one) if not, the field will be updated successfully.
     public void savingNewUpdatesInTheField(Users users, Users selectedUser, UpdateUserDTO updateUserDTO) {
 
@@ -122,7 +122,7 @@ public class UsersServiceImpl implements UsersService {
 
     }
 
-    // Método responsável por selecionar os campos que serao atualizados do DTO.
+
     // Method responsible for selecting the fields that will be updated from the DTO.
     public void selectedUserFieldsDTO(Users selectedUser, UpdateUserDTO updateUserDTO) {
         selectedUser.setFirst_name(updateUserDTO.getFirst_name());
@@ -133,7 +133,7 @@ public class UsersServiceImpl implements UsersService {
     }
 
 
-    // Método responsável por enviar o e-mail para a caixa de entrada do NOVO USUÁRIO no sistema, com o ID e senha gerados.
+
     // Method responsible for sending the email to the NEW USER's inbox in the system, with the generated ID and password.
     private void sendWelcomeEmail(UsersDTO users, Users savedUser, String passwordUser) {
         String subject = "WELCOME! Your credentials are ready!";
@@ -147,7 +147,7 @@ public class UsersServiceImpl implements UsersService {
     }
 
 
-    // Método que valida se o email já existe no banco de dados.
+
     // Method that validates whether the email already exists in the database.
     private void validateExistsEmail(UsersDTO users) {
         Users existingEmail = usersRepository.findByEmail(users.getEmail());
@@ -158,7 +158,7 @@ public class UsersServiceImpl implements UsersService {
     }
 
 
-    // Método responsável por gerar automaticamente a IDENTIDADE de 6 dígitos do Usuário no sistema.
+
     // Method responsible for automatically generating the User's 6-digit IDENTITY in the system.
     @Transactional
     private String generateId() {
@@ -176,7 +176,7 @@ public class UsersServiceImpl implements UsersService {
     }
 
 
-    // Método responsável por gerar automaticamente a SENHA de 10 dígitos do Usuário no sistema. (((que será enviada por email)))
+
     // Method responsible for automatically generating the User's 10-digit PASSWORD in the system. ((which will be sent by email))
     @Transactional
     private String generateRandomPassword() {

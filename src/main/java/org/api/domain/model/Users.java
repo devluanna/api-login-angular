@@ -55,7 +55,7 @@ public class Users implements UserDetails{
         this.subStatus = SubStatus.valueOf("IN_NON_COMPLIANCE");
         this.createdDate = LocalDateTime.now();
         this.lastPasswordUpdateDate = LocalDateTime.now();
-        this.passwordExpirationDays = this.lastPasswordUpdateDate.plusDays(30);
+        this.passwordExpirationDays = this.lastPasswordUpdateDate.plusDays(7);
     }
 
     @Override
